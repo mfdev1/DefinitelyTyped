@@ -295,6 +295,13 @@ declare module angular {
         animation(name: string, animationFactory: Function): IModule;
         animation(name: string, inlineAnnotatedFunction: any[]): IModule;
         animation(object: Object): IModule;
+	/**
+         * Use this method to register a component.
+         *
+         * @param name The name of the component.
+         * @param options A definition object passed into the component.
+         */
+        component(name: string, options: IComponentOptions): IModule;
         /**
          * Use this method to register work which needs to be performed on module loading.
          *
