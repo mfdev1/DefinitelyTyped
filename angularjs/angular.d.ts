@@ -1580,6 +1580,116 @@ declare module angular {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // Component
+    // see http://angularjs.blogspot.com.br/2015/11/angularjs-15-beta2-and-14-releases.html
+    // and http://toddmotto.com/exploring-the-angular-1-5-component-method/
+    ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Component definition object (a simplified directive definition object)
+     */
+    interface IComponentOptions {
+        /**
+         * Controller constructor function that should be associated with newly created scope or the name of a registered
+         * controller if passed as a string. Empty function by default.
+         * Use the array form to define dependencies (necessary if strictDi is enabled and you require dependency injection)
+         */
+        controller?: string | Injectable<IControllerConstructor>;
+        /**
+         * An identifier name for a reference to the controller. If present, the controller will be published to its scope under
+         * the specified name. If not present, this will default to '$ctrl'.
+         */
+        controllerAs?: string;
+        /**
+         * html template as a string or a function that returns an html template as a string which should be used as the
+         * contents of this component. Empty string by default.
+         * If template is a function, then it is injected with the following locals:
+         * $element - Current element
+         * $attrs - Current attributes object for the element
+         * Use the array form to define dependencies (necessary if strictDi is enabled and you require dependency injection)
+         */
+        template?: string | Injectable<(...args: any[]) => string>;
+        /**
+         * Path or function that returns a path to an html template that should be used as the contents of this component.
+         * If templateUrl is a function, then it is injected with the following locals:
+         * $element - Current element
+         * $attrs - Current attributes object for the element
+         * Use the array form to define dependencies (necessary if strictDi is enabled and you require dependency injection)
+         */
+        templateUrl?: string | Injectable<(...args: any[]) => string>;
+        /**
+         * Define DOM attribute binding to component properties. Component properties are always bound to the component
+         * controller and not to the scope.
+         */
+        bindings?: {[boundProperty: string]: string};
+        /**
+         * Whether transclusion is enabled. Disabled by default.
+         */
+        transclude?: boolean | {[slot: string]: string};
+        /**
+         * Requires the controllers of other directives and binds them to this component's controller.
+         * The object keys specify the property names under which the required controllers (object values) will be bound.
+         * Note that the required controllers will not be available during the instantiation of the controller,
+         * but they are guaranteed to be available just before the $onInit method is executed!
+         */
+        require?: {[controller: string]: string};
+    }
+
+    type IControllerConstructor =
+        (new (...args: any[]) => IController) |
+        // Instead of classes, plain functions are often used as controller constructors, especially in examples.
+        ((...args: any[]) => (void | IController));
+
+    /**
+     * Directive controllers have a well-defined lifecycle. Each controller can implement "lifecycle hooks". These are methods that
+     * will be called by Angular at certain points in the life cycle of the directive.
+     * https://docs.angularjs.org/api/ng/service/$compile#life-cycle-hooks
+     * https://docs.angularjs.org/guide/component
+     */
+    interface IController {
+        /**
+         * Called on each controller after all the controllers on an element have been constructed and had their bindings
+         * initialized (and before the pre & post linking functions for the directives on this element). This is a good
+         * place to put initialization code for your controller.
+         */
+        $onInit?(): void;
+        /**
+         * Called on each turn of the digest cycle. Provides an opportunity to detect and act on changes.
+         * Any actions that you wish to take in response to the changes that you detect must be invoked from this hook;
+         * implementing this has no effect on when `$onChanges` is called. For example, this hook could be useful if you wish
+         * to perform a deep equality check, or to check a `Dat`e object, changes to which would not be detected by Angular's
+         * change detector and thus not trigger `$onChanges`. This hook is invoked with no arguments; if detecting changes,
+         * you must store the previous value(s) for comparison to the current values.
+         */
+        $doCheck?(): void;
+        /**
+         * Called whenever one-way bindings are updated. The onChangesObj is a hash whose keys are the names of the bound
+         * properties that have changed, and the values are an {@link IChangesObject} object  of the form
+         * { currentValue, previousValue, isFirstChange() }. Use this hook to trigger updates within a component such as
+         * cloning the bound value to prevent accidental mutation of the outer value.
+         */
+        $onChanges?(onChangesObj: IOnChangesObject): void;
+        /**
+         * Called on a controller when its containing scope is destroyed. Use this hook for releasing external resources,
+         * watches and event handlers.
+         */
+        $onDestroy?(): void;
+        /**
+         * Called after this controller's element and its children have been linked. Similar to the post-link function this
+         * hook can be used to set up DOM event handlers and do direct DOM manipulation. Note that child elements that contain
+         * templateUrl directives will not have been compiled and linked since they are waiting for their template to load
+         * asynchronously and their own compilation and linking has been suspended until that occurs. This hook can be considered
+         * analogous to the ngAfterViewInit and ngAfterContentInit hooks in Angular 2. Since the compilation process is rather
+         * different in Angular 1 there is no direct mapping and care should be taken when upgrading.
+         */
+        $postLink?(): void;
+
+        // IController implementations frequently do not implement any of its methods.
+        // A string indexer indicates to TypeScript not to issue a weak type error in this case.
+        [s: string]: any;
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
     // Directive
     // see http://docs.angularjs.org/api/ng.$compileProvider#directive
     // and http://docs.angularjs.org/guide/directive
